@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Configurations>Debug;Release</Configurations>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>BIMPlugins.Nuke</PackageId>
+		<Version>1.0.0</Version>
+		<ProjectGuid>{2A698F95-8DCE-432E-A444-3FF82528BCAF}</ProjectGuid>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Company>BIMPlugins</Company>
+		<Authors>Samir Shibliev</Authors>
+		<Description>Nuke Package $(PackageId)</Description>
+		<CopyrightYears>$([System.DateTime]::Now.ToString('yyyy'))</CopyrightYears>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<AssemblyName>$(PackageId)</AssemblyName>
+		<Product>$(PackageId)</Product>
+		<PackageAssemblyVersion>.$(Version)</PackageAssemblyVersion>
+		<Copyright>Copyright © $(CopyrightYears) $(Company)</Copyright>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GitHubRepositoryOwner>Samveyil</GitHubRepositoryOwner>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageProjectUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</RepositoryUrl>
+		<RepositoryType>github</RepositoryType>
+		<PackageIconUrl />
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Nuke.Common" Version="9.0.4" IncludeAssets="build; compile" PrivateAssets="All"/>
+	</ItemGroup>
+
+</Project>
