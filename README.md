@@ -39,7 +39,7 @@ protected override int MinorVersion => 1;
 protected override int MaintenanceVersion => 9;
 ```
 
-Use MajorVersion from Configuration's name if MajorVersion == 0
+if MajorVersion == 0 MajorVersion take from Configuration's name 
 Configuration R2019 => 2019.1.9
 
 ## Set Solution info
@@ -50,7 +50,13 @@ public override Solution Solution { get; }
 
 [Parameter("Project to build name")]
 public override string ProjectName { get; } = "BIMPlugins.ExtStorage";
+```
 
+## Set Configurations
+
+Your project configurations should be named Rxxxx, where xxxx - RevitVersion
+
+```C#
 [Parameter("Build configurations to run sequentially")]
 public override Configuration[] Configurations { get; } = new[] { Configuration.R2019, Configuration.R2020, Configuration.R2021, Configuration.R2022, Configuration.R2023, Configuration.R2024 };
 ```

@@ -39,10 +39,10 @@ namespace BIMPlugins.Nuke
         private string GetVersion(string configuration)
         {
             string major;
-            if (MajorVersion != 1)
+            if (MajorVersion == 0)
             {
                 var match = Regex.Match(configuration, @"\d+");
-                major = match.Success ? match.Value : "1";
+                major = match.Success ? match.Value : "0";
             }
             else
             {
