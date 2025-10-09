@@ -35,6 +35,7 @@
 		<PackageProjectUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIconUrl />
 	</PropertyGroup>
 
