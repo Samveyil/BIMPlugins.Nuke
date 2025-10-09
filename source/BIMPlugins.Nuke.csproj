@@ -11,7 +11,7 @@
 
 	<PropertyGroup>
 		<PackageId>BIMPlugins.Nuke</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<ProjectGuid>{2A698F95-8DCE-432E-A444-3FF82528BCAF}</ProjectGuid>
 	</PropertyGroup>
 
@@ -45,6 +45,22 @@
 
 	<ItemGroup>
 		<PackageReference Include="Nuke.Common" Version="9.0.4" IncludeAssets="build; compile" PrivateAssets="All"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+			<Visible>false</Visible>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE.txt">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+			<Visible>false</Visible>
+		</None>
 	</ItemGroup>
 
 </Project>
