@@ -65,7 +65,7 @@ namespace BIMPlugins.Nuke
             .DependsOn(Clean)
             .Executes(() =>
             {
-                var csprojPath = LibraryProject.Path.Parent;
+                var csprojPath = LibraryProject.Path;
                 var projectXml = XDocument.Load(csprojPath);
 
                 var ns = projectXml.Root?.Name.Namespace ?? XNamespace.None;
