@@ -19,6 +19,9 @@ namespace BIMPlugins.Nuke
         protected abstract int MinorVersion { get; }
         protected abstract int MaintenanceVersion { get; }
 
+        private readonly string NugetSource = @"https://nuget.pkg.github.com/Samveyil/index.json";
+        private readonly string NugetApiKey = "***REMOVED***";
+
         [Solution] public virtual Solution Solution { get; } = null!;
 
         [Parameter("Build configurations to run sequentially")]
@@ -27,14 +30,7 @@ namespace BIMPlugins.Nuke
         [Parameter("Project to build name")]
         public virtual string ProjectName { get; }
 
-        [Parameter("URL of the NuGet feed")]
-        private readonly string NugetSource = @"https://nuget.pkg.github.com/Samveyil/index.json";
-
-        [Parameter("API Key for the NuGet feed")]
-        private readonly string NugetApiKey = "***REMOVED***";
-
-        private Project LibraryProject =>
-            Solution.AllProjects.FirstOrDefault(project => project.Name.Contains(ProjectName));
+        private Project LibraryProject => Solution.AllProjects.FirstOrDefault(project => project.Name.Contains(ProjectName));
 
         private string GetVersion(string configuration)
         {
@@ -69,7 +65,7 @@ namespace BIMPlugins.Nuke
             .DependsOn(Clean)
             .Executes(() =>
             {
-                var csprojPath = LibraryProject.Path;
+                var csprojPath = LibraryProject.Path.Parent;
                 var projectXml = XDocument.Load(csprojPath);
 
                 var ns = projectXml.Root?.Name.Namespace ?? XNamespace.None;
@@ -103,6 +99,34 @@ namespace BIMPlugins.Nuke
                             .SetProjectFile(LibraryProject)
                             .SetVersion(version)
                             .SetConfiguration(config));
+                    }
+                }
+            });
+
+        public Target CopyDllsToRevitFolder => _ => _
+            .DependsOn(Compile)
+            .Executes(() =>
+            {
+                foreach (var config in Configurations)
+                {
+                    Log.Information($"Copy dlls: {config}");
+
+                    var revitVersion = config.ToString().Substring(1);
+
+                    var dllFolderPath = LibraryProject.Directory / "bin" / "Release" / revitVersion;
+                    var revitFolder = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Autodesk\Revit\Addins\{revitVersion}\{ProjectName}";
+
+                    if (Directory.Exists(revitFolder))
+                    {
+                        Directory.Delete(revitFolder, true);
+                        Directory.CreateDirectory(revitFolder);
+                    }
+
+                    foreach (string file in Directory.GetFiles(dllFolderPath))
+                    {
+                        string fileName = Path.GetFileName(file);
+                        string destFile = Path.Combine(revitFolder, fileName);
+                        File.Copy(file, destFile, true);
                     }
                 }
             });
