@@ -6,6 +6,7 @@ namespace BIMPlugins.Nuke
     [TypeConverter(typeof(TypeConverter<Configuration>))]
     public class Configuration : Enumeration
     {
+        public static Configuration Release = new Configuration { Value = nameof(Release) };
         public static Configuration R2019 = new Configuration { Value = nameof(R2019) };
         public static Configuration R2020 = new Configuration { Value = nameof(R2020) };
         public static Configuration R2021 = new Configuration { Value = nameof(R2021) };
