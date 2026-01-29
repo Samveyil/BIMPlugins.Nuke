@@ -25,7 +25,7 @@ namespace BIMPlugins.Nuke
         [Solution] public virtual Solution Solution { get; } = null!;
 
         [Parameter("Build configurations to run sequentially")]
-        public virtual Configuration[] Configurations { get; } = new[] { Configuration.R2019, Configuration.R2020 };
+        public virtual string[] Configurations { get; } = ["R2019", "R2020"];
 
         [Parameter("Project to build name")]
         public virtual string ProjectName { get; }
