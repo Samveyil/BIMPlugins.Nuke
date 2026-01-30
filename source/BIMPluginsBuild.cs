@@ -1,6 +1,7 @@
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
 using Serilog;
@@ -65,40 +66,41 @@ namespace BIMPlugins.Nuke
             .DependsOn(Clean)
             .Executes(() =>
             {
-                var csprojPath = LibraryProject.Path;
-                var projectXml = XDocument.Load(csprojPath);
+            var csprojPath = LibraryProject.Path;
+            var projectXml = XDocument.Load(csprojPath);
 
-                var ns = projectXml.Root?.Name.Namespace ?? XNamespace.None;
-                var tfm = projectXml.Descendants(ns + "TargetFramework").FirstOrDefault()?.Value
-                       ?? projectXml.Descendants(ns + "TargetFrameworks").FirstOrDefault()?.Value.Split(';').FirstOrDefault();
+            var ns = projectXml.Root?.Name.Namespace ?? XNamespace.None;
+            var tfm = projectXml.Descendants(ns + "TargetFramework").FirstOrDefault()?.Value
+                   ?? projectXml.Descendants(ns + "TargetFrameworks").FirstOrDefault()?.Value.Split(';').FirstOrDefault();
 
-                if (string.IsNullOrWhiteSpace(tfm))
-                    throw new Exception("Cannot determine TargetFramework from .csproj");
+            if (string.IsNullOrWhiteSpace(tfm))
+                throw new Exception("Cannot determine TargetFramework from .csproj");
 
-                foreach (var config in Configurations)
+            foreach (var config in Configurations)
+            {
+                Log.Information($"Building configuration: {config}");
+
+                var version = GetVersion(config);
+
+                DotNetRestore(s => s
+                    .SetProjectFile(LibraryProject)
+                    .SetProperty("Configuration", config));
+
+                if (tfm.StartsWith("net4")) // .NET Framework
                 {
-                    Log.Information($"Building configuration: {config}");
-
-                    var version = GetVersion(config);
-
-                    DotNetRestore(s => s
+                    MSBuildTasks.MSBuild(s => s
+                        .SetProcessToolPath(MSBuildTasks.MSBuildPath)
+                        .SetTargetPath(LibraryProject.Path)
+                        .SetTargets("Build")
+                        .SetConfiguration(config)
+                        .SetProperty("Version", version));
+                }
+                else // .NET Core / .NET 5+
+                {
+                    DotNetBuild(s => s
                         .SetProjectFile(LibraryProject)
-                        .SetProperty("Configuration", config));
-
-                    if (tfm.StartsWith("net4")) // .NET Framework
-                    {
-                        MSBuildTasks.MSBuild(s => s
-                            .SetTargetPath(LibraryProject.Path)
-                            .SetTargets("Build")
-                            .SetConfiguration(config)
-                            .SetProperty("Version", version));
-                    }
-                    else // .NET Core / .NET 5+
-                    {
-                        DotNetBuild(s => s
-                            .SetProjectFile(LibraryProject)
-                            .SetVersion(version)
-                            .SetConfiguration(config));
+                        .SetConfiguration(config)
+                            .SetVersion(version));
                     }
                 }
             });
