@@ -23,13 +23,15 @@ namespace BIMPlugins.Nuke
         private readonly string NugetSource = @"https://nuget.pkg.github.com/Samveyil/index.json";
         private readonly string NugetApiKey = "***REMOVED***";
 
-        [Solution] public virtual Solution Solution { get; } = null!;
+        [Solution] protected abstract Solution Solution { get; }
 
-        [Parameter("Build configurations to run sequentially")]
-        public virtual string[] Configurations { get; } = ["R2019", "R2020"];
+        [Parameter("Имя проекта для сборки")]
+        protected abstract string ProjectName { get; }
+        
+        [Parameter("Имена конфигураций для сборки (перечислить через запятую)")]
+        protected virtual string[] Configurations { get; } = new[] { "R2019", "R2020", "R2021", "R2022", "R2023" };
 
-        [Parameter("Project to build name")]
-        public virtual string ProjectName { get; }
+        protected virtual string MSBuildPath { get; } = MSBuildTasks.MSBuildPath;
 
         private Project LibraryProject => Solution.AllProjects.FirstOrDefault(project => project.Name.Contains(ProjectName));
 
@@ -89,7 +91,7 @@ namespace BIMPlugins.Nuke
                 if (tfm.StartsWith("net4")) // .NET Framework
                 {
                     MSBuildTasks.MSBuild(s => s
-                        .SetProcessToolPath(MSBuildTasks.MSBuildPath)
+                        .SetProcessToolPath(MSBuildPath)
                         .SetTargetPath(LibraryProject.Path)
                         .SetTargets("Build")
                         .SetConfiguration(config)
