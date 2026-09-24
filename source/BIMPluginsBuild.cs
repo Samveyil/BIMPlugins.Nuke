@@ -27,7 +27,10 @@ namespace BIMPlugins.Nuke
 
         [Parameter("Имя проекта для сборки")]
         protected abstract string ProjectName { get; }
-        
+   
+        [Parameter("Имя папки для копирования")]
+        protected virtual string FolderName { get; set; } = string.Empty;
+
         [Parameter("Имена конфигураций для сборки (перечислить через запятую)")]
         protected virtual string[] Configurations { get; } = new[] { "R2019", "R2020", "R2021", "R2022", "R2023" };
 
@@ -111,6 +114,9 @@ namespace BIMPlugins.Nuke
             .DependsOn(Compile)
             .Executes(() =>
             {
+                if (string.IsNullOrEmpty(FolderName))
+                    FolderName = ProjectName;
+
                 foreach (var config in Configurations)
                 {
                     Log.Information($"Copy dlls: {config}");
@@ -118,7 +124,7 @@ namespace BIMPlugins.Nuke
                     var revitVersion = config.ToString().Substring(1);
 
                     var dllFolderPath = LibraryProject.Directory / "bin" / "Release" / revitVersion;
-                    var revitFolder = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Autodesk\Revit\Addins\{revitVersion}\{ProjectName}";
+                    var revitFolder = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\Autodesk\Revit\Addins\{revitVersion}\{FolderName}";
 
                     if (Directory.Exists(revitFolder))
                     {
@@ -126,7 +132,7 @@ namespace BIMPlugins.Nuke
                         Directory.CreateDirectory(revitFolder);
                     }
 
-                    foreach (string file in Directory.GetFiles(dllFolderPath))
+                    foreach (string file in Directory.GetFiles(dllFolderPath, "*.*", SearchOption.AllDirectories))
                     {
                         string fileName = Path.GetFileName(file);
                         string destFile = Path.Combine(revitFolder, fileName);
