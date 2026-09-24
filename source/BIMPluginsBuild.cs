@@ -134,8 +134,8 @@ namespace BIMPlugins.Nuke
 
                     foreach (string file in Directory.GetFiles(dllFolderPath, "*.*", SearchOption.AllDirectories))
                     {
-                        string fileName = Path.GetFileName(file);
-                        string destFile = Path.Combine(revitFolder, fileName);
+                        string relativePath = Path.GetRelativePath(dllFolderPath, file);
+                        string destFile = Path.Combine(revitFolder, relativePath);
                         File.Copy(file, destFile, true);
                     }
                 }
