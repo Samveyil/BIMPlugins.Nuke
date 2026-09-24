@@ -136,6 +136,9 @@ namespace BIMPlugins.Nuke
                     {
                         string relativePath = Path.GetRelativePath(dllFolderPath, file);
                         string destFile = Path.Combine(revitFolder, relativePath);
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+
                         File.Copy(file, destFile, true);
                     }
                 }
