@@ -20,8 +20,10 @@ namespace BIMPlugins.Nuke
         protected abstract int MinorVersion { get; }
         protected abstract int MaintenanceVersion { get; }
 
-        private readonly string NugetSource = @"https://nuget.pkg.github.com/Samveyil/index.json";
-        private readonly string NugetApiKey = "***REMOVED***";
+        [Parameter("NuGet source URL")]
+        protected virtual string NugetSource { get; } = @"https://nuget.pkg.github.com/Samveyil/index.json";
+        [Parameter("NuGet API key (--nuget-api-key or env NUGET_API_KEY)"), Secret]
+        readonly string NugetApiKey;
 
         [Solution] protected abstract Solution Solution { get; }
 
@@ -147,6 +149,9 @@ namespace BIMPlugins.Nuke
         public Target PushToNugetRepositiry => _ => _
             .Executes(() =>
             {
+                if (string.IsNullOrWhiteSpace(NugetApiKey))
+                    throw new Exception("NuGet API key is not set. Pass --nuget-api-key or set NUGET_API_KEY.");
+
                 var matchedNupkgs = Directory
                     .GetFiles(LibraryProject.Directory, "*.nupkg", SearchOption.AllDirectories)
                     .ToList();
