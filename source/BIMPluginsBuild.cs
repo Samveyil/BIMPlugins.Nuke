@@ -28,7 +28,7 @@ namespace BIMPlugins.Nuke
         protected virtual string VersionSuffix { get; } = string.Empty;
 
         [Parameter("NuGet source URL")]
-        protected virtual string NugetSource { get; } = @"https://nuget.pkg.github.com/Samveyil/index.json";
+        protected virtual string NugetSource { get; } = @"https://api.nuget.org/v3/index.json";
         [Parameter("NuGet API key (--nuget-api-key or env NUGET_API_KEY)"), Secret]
         readonly string NugetApiKey;
 

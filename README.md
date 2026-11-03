@@ -57,7 +57,7 @@ class Build : BIMPluginsBuild
 | `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
 | `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
 | `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
-| `NugetSource` | no | NuGet feed for publishing. Default: `https://nuget.pkg.github.com/Samveyil/index.json` — override it with your own feed. |
+| `NugetSource` | no | NuGet feed for publishing. Default: nuget.org (`https://api.nuget.org/v3/index.json`). |
 
 ### Configurations
 
@@ -116,13 +116,9 @@ nuke CopyDllsToRevitFolder --configurations R2023 R2024
 
 ## Publishing packages
 
-`PushToNugetRepositiry` pushes to `NugetSource`. Set it to the feed you publish to:
+`PushToNugetRepositiry` pushes to `NugetSource`, which is nuget.org by default. To publish to another feed, for example GitHub Packages, override it:
 
 ```C#
-// nuget.org
-protected override string NugetSource => "https://api.nuget.org/v3/index.json";
-
-// GitHub Packages
 protected override string NugetSource => "https://nuget.pkg.github.com/<owner>/index.json";
 ```
 
