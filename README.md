@@ -1,62 +1,130 @@
 # BIMPlugins.Nuke
 
-Package to simplify the build automation system using Nuke.Common
+A base [NUKE](https://nuke.build) build class for Revit add-ins. It builds a project for several Revit versions in one run, copies the output to the Revit add-ins folder and publishes NuGet packages.
 
-# Examples
+## Installation
 
-# Build.cs
+The package is hosted on GitHub Packages. Add the source to your `nuget.config` (GitHub Packages requires a token with `read:packages` even for public packages):
+
+```xml
+<configuration>
+  <packageSources>
+    <add key="Samveyil" value="https://nuget.pkg.github.com/Samveyil/index.json" />
+  </packageSources>
+  <packageSourceCredentials>
+    <Samveyil>
+      <add key="Username" value="Samveyil" />
+      <add key="ClearTextPassword" value="%NUGET_API_KEY%" />
+    </Samveyil>
+  </packageSourceCredentials>
+</configuration>
+```
+
+Then reference the package from your `_build` project:
+
+```xml
+<PackageReference Include="BIMPlugins.Nuke" Version="1.1.3" />
+```
+
+## Usage
+
+Inherit your build class from `BIMPluginsBuild`:
 
 ```C#
 using BIMPlugins.Nuke;
 using Nuke.Common;
 using Nuke.Common.ProjectModel;
 
-public class Build : BIMPluginsBuild
+class Build : BIMPluginsBuild
 {
     protected override int MajorVersion => 0;
     protected override int MinorVersion => 1;
     protected override int MaintenanceVersion => 9;
 
-
     [Solution("BIMPlugins.ExtStorage.sln")]
-    public override Solution Solution { get; }
+    protected override Solution Solution { get; }
 
-    [Parameter("Project to build name")]
-    public override string ProjectName { get; } = "BIMPlugins.ExtStorage";
+    protected override string ProjectName => "BIMPlugins.ExtStorage";
 
-    [Parameter("Build configurations to run sequentially")]
-    public override Configuration[] Configurations { get; } = new[] { Configuration.R2019, Configuration.R2020, Configuration.R2021, Configuration.R2022, Configuration.R2023, Configuration.R2024 };
+    protected override string[] Configurations { get; } = { "R2022", "R2023", "R2024" };
 
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.CopyDllsToRevitFolder);
 }
 ```
 
-## Set version
+## Settings
 
-```C#
-protected override int MajorVersion => 0;
-protected override int MinorVersion => 1;
-protected override int MaintenanceVersion => 9;
+| Member | Required | Description |
+|---|---|---|
+| `MajorVersion`, `MinorVersion`, `MaintenanceVersion` | yes | Assembly/package version. See [Versioning](#versioning). |
+| `Solution` | yes | Solution that contains the project. |
+| `ProjectName` | yes | Project to build (the first project whose name contains this string). |
+| `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
+| `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
+| `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
+| `NugetSource` | no | NuGet feed for publishing. Default: `https://nuget.pkg.github.com/Samveyil/index.json`. |
+
+### Configurations
+
+Name your project configurations `Rxxxx`, where `xxxx` is the Revit version: `R2019`, `R2020`, … The build output for each configuration is expected in `bin\Release\<year>\`.
+
+### Versioning
+
+If `MajorVersion` is `0`, the major version is taken from the configuration name:
+
+```
+MajorVersion = 0, MinorVersion = 1, MaintenanceVersion = 9
+R2019 => 2019.1.9
+R2024 => 2024.1.9
 ```
 
-if MajorVersion == 0 MajorVersion take from Configuration's name 
-Configuration R2019 => 2019.1.9
+Otherwise the version is `MajorVersion.MinorVersion.MaintenanceVersion` for all configurations.
 
-## Set Solution info
+## Targets
 
-```C#
-[Solution("BIMPlugins.ExtStorage.sln")]
-public override Solution Solution { get; }
+| Target | Description |
+|---|---|
+| `Clean` | Cleans the project's `bin` and `obj` folders. |
+| `Compile` | Builds every configuration. .NET Framework projects (`net4*`) are built with MSBuild, others with `dotnet build`. |
+| `CopyDllsToRevitFolder` | Builds, then copies the output to `%AppData%\Autodesk\Revit\Addins\<year>\<FolderName>`. The target folder is recreated on each run. |
+| `PushToNugetRepositiry` | Pushes all `*.nupkg` files found in the project folder to `NugetSource`. Duplicates are skipped. |
 
-[Parameter("Project to build name")]
-public override string ProjectName { get; } = "BIMPlugins.ExtStorage";
+Run a target:
+
+```bash
+nuke CopyDllsToRevitFolder
+nuke CopyDllsToRevitFolder --configurations R2023 R2024
 ```
 
-## Set Configurations
+## Publishing packages
 
-Your project configurations should be named Rxxxx, where xxxx - RevitVersion
+`PushToNugetRepositiry` needs an API key. For GitHub Packages use a classic personal access token with the `write:packages` scope. **Never put the token in source code.**
 
-```C#
-[Parameter("Build configurations to run sequentially")]
-public override Configuration[] Configurations { get; } = new[] { Configuration.R2019, Configuration.R2020, Configuration.R2021, Configuration.R2022, Configuration.R2023, Configuration.R2024 };
+Pass it in one of these ways:
+
+```bash
+# command-line argument
+nuke PushToNugetRepositiry --nuget-api-key <token>
+
+# environment variable (Windows, persistent)
+setx NUGET_API_KEY "<token>"
+nuke PushToNugetRepositiry
+
+# encrypted NUKE secrets (stored in .nuke/parameters.json, asks for a password)
+nuke :secrets
 ```
+
+In GitHub Actions the built-in token is enough:
+
+```yaml
+permissions:
+  packages: write
+steps:
+  - run: ./build.cmd PushToNugetRepositiry
+    env:
+      NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## License
+
+[MIT](LICENSE.txt)
