@@ -11,7 +11,7 @@
 
 	<PropertyGroup>
 		<PackageId>BIMPlugins.Nuke</PackageId>
-		<Version>1.1.2</Version>
+		<Version>1.1.3</Version>
 		<ProjectGuid>{2A698F95-8DCE-432E-A444-3FF82528BCAF}</ProjectGuid>
 	</PropertyGroup>
 
@@ -19,6 +19,8 @@
 		<Company>BIMPlugins</Company>
 		<Authors>Samir Shibliev</Authors>
 		<Description>Nuke Package $(PackageId)</Description>
+		<PackageTags>revit;revit-api;autodesk;bim;extensions</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<CopyrightYears>$([System.DateTime]::Now.ToString('yyyy'))</CopyrightYears>
 	</PropertyGroup>
 
@@ -26,7 +28,7 @@
 		<AssemblyName>$(PackageId)</AssemblyName>
 		<Product>$(PackageId)</Product>
 		<PackageAssemblyVersion>.$(Version)</PackageAssemblyVersion>
-		<Copyright>Copyright © $(CopyrightYears) $(Company)</Copyright>
+		<Copyright>Copyright © $(CopyrightYears) Samir Shibliev</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -34,7 +36,8 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageProjectUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/$(GitHubRepositoryOwner)/$(PackageId)</RepositoryUrl>
-		<RepositoryType>github</RepositoryType>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIconUrl />
 	</PropertyGroup>
@@ -48,19 +51,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-			<Visible>false</Visible>
-		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="..\LICENSE.txt">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-			<Visible>false</Visible>
-		</None>
+		<None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
 	</ItemGroup>
 
 </Project>
