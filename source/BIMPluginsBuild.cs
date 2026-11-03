@@ -20,6 +20,13 @@ namespace BIMPlugins.Nuke
         protected abstract int MinorVersion { get; }
         protected abstract int MaintenanceVersion { get; }
 
+        // Take the major version from the configuration name (R2024 => 2024.x.y).
+        // Override with false to use MajorVersion as is, e.g. for 0.0.9.
+        protected virtual bool UseRevitVersionAsMajor => MajorVersion == 0;
+
+        [Parameter("Pre-release suffix, e.g. beta.1 => 1.2.0-beta.1")]
+        protected virtual string VersionSuffix { get; } = string.Empty;
+
         [Parameter("NuGet source URL")]
         protected virtual string NugetSource { get; } = @"https://nuget.pkg.github.com/Samveyil/index.json";
         [Parameter("NuGet API key (--nuget-api-key or env NUGET_API_KEY)"), Secret]
@@ -43,7 +50,7 @@ namespace BIMPlugins.Nuke
         private string GetVersion(string configuration)
         {
             string major;
-            if (MajorVersion == 0)
+            if (UseRevitVersionAsMajor)
             {
                 var match = Regex.Match(configuration, @"\d+");
                 major = match.Success ? match.Value : "0";
@@ -53,7 +60,8 @@ namespace BIMPlugins.Nuke
                 major = MajorVersion.ToString();
             }
 
-            return $"{major}.{MinorVersion}.{MaintenanceVersion}";
+            var version = $"{major}.{MinorVersion}.{MaintenanceVersion}";
+            return string.IsNullOrWhiteSpace(VersionSuffix) ? version : $"{version}-{VersionSuffix}";
         }
 
         public Target Clean => _ => _

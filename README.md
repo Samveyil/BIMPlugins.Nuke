@@ -59,6 +59,8 @@ class Build : BIMPluginsBuild
 | `MajorVersion`, `MinorVersion`, `MaintenanceVersion` | yes | Assembly/package version. See [Versioning](#versioning). |
 | `Solution` | yes | Solution that contains the project. |
 | `ProjectName` | yes | Project to build (the first project whose name contains this string). |
+| `UseRevitVersionAsMajor` | no | Take the major version from the configuration name. Default: `MajorVersion == 0`. |
+| `VersionSuffix` | no | Pre-release suffix (`beta.1` => `1.2.0-beta.1`). Default: none. |
 | `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
 | `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
 | `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
@@ -70,7 +72,7 @@ Name your project configurations `Rxxxx`, where `xxxx` is the Revit version: `R2
 
 ### Versioning
 
-If `MajorVersion` is `0`, the major version is taken from the configuration name:
+By default, if `MajorVersion` is `0`, the major version is taken from the configuration name:
 
 ```
 MajorVersion = 0, MinorVersion = 1, MaintenanceVersion = 9
@@ -79,6 +81,29 @@ R2024 => 2024.1.9
 ```
 
 Otherwise the version is `MajorVersion.MinorVersion.MaintenanceVersion` for all configurations.
+
+To get a real `0.x.y` version (for example `0.0.9`), turn the Revit-year rule off:
+
+```C#
+protected override int MajorVersion => 0;
+protected override int MinorVersion => 0;
+protected override int MaintenanceVersion => 9;
+protected override bool UseRevitVersionAsMajor => false; // => 0.0.9
+```
+
+### Pre-release versions
+
+Set `VersionSuffix` to add a pre-release label:
+
+```bash
+nuke Compile --version-suffix beta.1   # 1.2.0 => 1.2.0-beta.1
+```
+
+or in code:
+
+```C#
+protected override string VersionSuffix => "beta.1";
+```
 
 ## Targets
 
