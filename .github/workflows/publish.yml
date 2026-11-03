@@ -12,9 +12,9 @@ jobs:
   publish:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -25,8 +25,12 @@ jobs:
           $tag = "${{ github.ref_name }}".TrimStart('v')
           if ($version -ne $tag) { throw "Tag v$tag does not match <Version>$version</Version> in the .csproj" }
 
+      # GeneratePackageOnBuild is on, so a plain `dotnet pack` can't find the dll; build first.
+      - name: Build
+        run: dotnet build source -c Release
+
       - name: Pack
-        run: dotnet pack source -c Release -o artifacts
+        run: dotnet pack source -c Release --no-build -o artifacts
 
       - name: NuGet login (Trusted Publishing)
         uses: NuGet/login@v1
