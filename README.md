@@ -1,26 +1,19 @@
 # BIMPlugins.Nuke
 
+[![NuGet](https://img.shields.io/nuget/v/BIMPlugins.Nuke.svg)](https://www.nuget.org/packages/BIMPlugins.Nuke)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)
+
 A base [NUKE](https://nuke.build) build class for Revit add-ins. It builds a project for several Revit versions in one run, copies the output to the Revit add-ins folder and publishes NuGet packages.
 
 ## Installation
 
-The package is hosted on GitHub Packages. Add the source to your `nuget.config` (GitHub Packages requires a token with `read:packages` even for public packages):
+Add the package to your `_build` project:
 
-```xml
-<configuration>
-  <packageSources>
-    <add key="Samveyil" value="https://nuget.pkg.github.com/Samveyil/index.json" />
-  </packageSources>
-  <packageSourceCredentials>
-    <Samveyil>
-      <add key="Username" value="Samveyil" />
-      <add key="ClearTextPassword" value="%NUGET_API_KEY%" />
-    </Samveyil>
-  </packageSourceCredentials>
-</configuration>
+```bash
+dotnet add package BIMPlugins.Nuke
 ```
 
-Then reference the package from your `_build` project:
+or
 
 ```xml
 <PackageReference Include="BIMPlugins.Nuke" Version="1.1.3" />
@@ -56,7 +49,7 @@ class Build : BIMPluginsBuild
 
 | Member | Required | Description |
 |---|---|---|
-| `MajorVersion`, `MinorVersion`, `MaintenanceVersion` | yes | Assembly/package version. See [Versioning](#versioning). |
+| `MajorVersion`, `MinorVersion`, `MaintenanceVersion` | yes | Assembly/package version. See *Versioning* below. |
 | `Solution` | yes | Solution that contains the project. |
 | `ProjectName` | yes | Project to build (the first project whose name contains this string). |
 | `UseRevitVersionAsMajor` | no | Take the major version from the configuration name. Default: `MajorVersion == 0`. |
@@ -64,7 +57,7 @@ class Build : BIMPluginsBuild
 | `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
 | `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
 | `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
-| `NugetSource` | no | NuGet feed for publishing. Default: `https://nuget.pkg.github.com/Samveyil/index.json`. |
+| `NugetSource` | no | NuGet feed for publishing. Default: `https://nuget.pkg.github.com/Samveyil/index.json` — override it with your own feed. |
 
 ### Configurations
 
@@ -123,9 +116,24 @@ nuke CopyDllsToRevitFolder --configurations R2023 R2024
 
 ## Publishing packages
 
-`PushToNugetRepositiry` needs an API key. For GitHub Packages use a classic personal access token with the `write:packages` scope. **Never put the token in source code.**
+`PushToNugetRepositiry` pushes to `NugetSource`. Set it to the feed you publish to:
 
-Pass it in one of these ways:
+```C#
+// nuget.org
+protected override string NugetSource => "https://api.nuget.org/v3/index.json";
+
+// GitHub Packages
+protected override string NugetSource => "https://nuget.pkg.github.com/<owner>/index.json";
+```
+
+or pass it on the command line: `--nuget-source <url>`.
+
+The target also needs an API key:
+
+- **nuget.org** — create a key at <https://www.nuget.org/account/apikeys> with the *Push* scope.
+- **GitHub Packages** — a classic personal access token with the `write:packages` scope.
+
+**Never put the key in source code.** Pass it in one of these ways:
 
 ```bash
 # command-line argument
@@ -139,17 +147,17 @@ nuke PushToNugetRepositiry
 nuke :secrets
 ```
 
-In GitHub Actions the built-in token is enough:
+In GitHub Actions store the key as a repository secret:
 
 ```yaml
-permissions:
-  packages: write
 steps:
   - run: ./build.cmd PushToNugetRepositiry
     env:
-      NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 ```
+
+For GitHub Packages the built-in `${{ secrets.GITHUB_TOKEN }}` with `permissions: packages: write` is enough.
 
 ## License
 
-[MIT](LICENSE.txt)
+[MIT](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)
