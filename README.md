@@ -16,7 +16,7 @@ dotnet add package BIMPlugins.Nuke
 or
 
 ```xml
-<PackageReference Include="BIMPlugins.Nuke" Version="1.1.3" />
+<PackageReference Include="BIMPlugins.Nuke" Version="1.1.4" />
 ```
 
 ## Usage
@@ -57,6 +57,7 @@ class Build : BIMPluginsBuild
 | `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
 | `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
 | `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
+| `NugetUser` | no | nuget.org user for Trusted Publishing from GitHub Actions. Default: none. |
 | `NugetSource` | no | NuGet feed for publishing. Default: nuget.org (`https://api.nuget.org/v3/index.json`). |
 
 ### Configurations
@@ -124,7 +125,28 @@ protected override string NugetSource => "https://nuget.pkg.github.com/<owner>/i
 
 or pass it on the command line: `--nuget-source <url>`.
 
-The target also needs an API key:
+### Trusted Publishing (recommended for nuget.org)
+
+From GitHub Actions the target can publish to nuget.org with no API key at all, using [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing): it exchanges the workflow's OIDC token for a short-lived key.
+
+1. On nuget.org open *Trusted Publishing* and create a policy for your repository and workflow file.
+2. In the workflow allow OIDC and pass your nuget.org user name:
+
+```yaml
+permissions:
+  id-token: write
+  contents: read
+
+steps:
+  - uses: actions/checkout@v5
+  - run: ./build.cmd PushToNugetRepositiry --nuget-user <your nuget.org user>
+```
+
+The user can also be set with the `NUGET_USER` environment variable or by overriding `NugetUser` in code. If an API key is passed as well, the key is used.
+
+### API key
+
+Outside GitHub Actions, or for other feeds, the target needs an API key:
 
 - **nuget.org** — create a key at <https://www.nuget.org/account/apikeys> with the *Push* scope.
 - **GitHub Packages** — a classic personal access token with the `write:packages` scope.

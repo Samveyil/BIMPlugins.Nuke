@@ -30,7 +30,10 @@ namespace BIMPlugins.Nuke
         [Parameter("NuGet source URL")]
         protected virtual string NugetSource { get; } = @"https://api.nuget.org/v3/index.json";
         [Parameter("NuGet API key (--nuget-api-key or env NUGET_API_KEY)"), Secret]
-        readonly string NugetApiKey;
+        readonly string NugetApiKey = null;
+
+        [Parameter("nuget.org user for Trusted Publishing from GitHub Actions (--nuget-user or env NUGET_USER)")]
+        protected virtual string NugetUser { get; } = string.Empty;
 
         [Solution] protected abstract Solution Solution { get; }
 
@@ -157,8 +160,7 @@ namespace BIMPlugins.Nuke
         public Target PushToNugetRepositiry => _ => _
             .Executes(() =>
             {
-                if (string.IsNullOrWhiteSpace(NugetApiKey))
-                    throw new Exception("NuGet API key is not set. Pass --nuget-api-key or set NUGET_API_KEY.");
+                var apiKey = ResolveNugetApiKey();
 
                 var matchedNupkgs = Directory
                     .GetFiles(LibraryProject.Directory, "*.nupkg", SearchOption.AllDirectories)
@@ -169,9 +171,26 @@ namespace BIMPlugins.Nuke
                     DotNetNuGetPush(s => s
                         .SetTargetPath(nupkg)
                         .SetSource(NugetSource)
-                        .SetApiKey(NugetApiKey)
+                        .SetApiKey(apiKey)
                         .EnableSkipDuplicate());
                 }
             });
+
+        // An explicit API key wins; otherwise use Trusted Publishing when running in GitHub Actions.
+        private string ResolveNugetApiKey()
+        {
+            if (!string.IsNullOrWhiteSpace(NugetApiKey))
+                return NugetApiKey;
+
+            if (!string.IsNullOrWhiteSpace(NugetUser) && TrustedPublishing.IsAvailable)
+            {
+                Log.Information("Using Trusted Publishing for {User}", NugetUser);
+                return TrustedPublishing.GetApiKey(NugetUser);
+            }
+
+            throw new Exception(
+                "NuGet API key is not set. Pass --nuget-api-key / set NUGET_API_KEY, " +
+                "or use Trusted Publishing in GitHub Actions with --nuget-user / NUGET_USER and 'permissions: id-token: write'.");
+        }
     }
 }
