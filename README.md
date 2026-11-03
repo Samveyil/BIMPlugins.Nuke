@@ -154,6 +154,20 @@ steps:
 
 For GitHub Packages the built-in `${{ secrets.GITHUB_TOKEN }}` with `permissions: packages: write` is enough.
 
+## Releasing this package
+
+`BIMPlugins.Nuke` itself is published to nuget.org by the [Publish](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/.github/workflows/publish.yml) workflow using [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so no API key is stored anywhere.
+
+1. Bump `<Version>` in `source/BIMPlugins.Nuke.csproj` and push.
+2. Push a tag with the same version:
+
+   ```bash
+   git tag v1.1.4
+   git push origin v1.1.4
+   ```
+
+The workflow fails if the tag does not match `<Version>`.
+
 ## License
 
 [MIT](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)

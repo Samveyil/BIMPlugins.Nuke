@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Check tag matches package version
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content source/BIMPlugins.Nuke.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          $tag = "${{ github.ref_name }}".TrimStart('v')
+          if ($version -ne $tag) { throw "Tag v$tag does not match <Version>$version</Version> in the .csproj" }
+
+      - name: Pack
+        run: dotnet pack source -c Release -o artifacts
+
+      - name: NuGet login (Trusted Publishing)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: SamirShibliev
+
+      - name: Push
+        run: dotnet nuget push artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
