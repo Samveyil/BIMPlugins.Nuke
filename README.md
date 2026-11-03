@@ -1,7 +1,9 @@
 # BIMPlugins.Nuke
 
+[![Visual Studio 2022](https://img.shields.io/badge/Visual%20Studio-2022-blue)](https://github.com/Samveyil/BIMPlugins.Nuke)
+[![Nuke](https://img.shields.io/badge/Nuke-Build-blue)](https://nuke.build/)
 [![NuGet](https://img.shields.io/nuget/v/BIMPlugins.Nuke.svg)](https://www.nuget.org/packages/BIMPlugins.Nuke)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)
+[![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)
 
 A base [NUKE](https://nuke.build) build class for Revit add-ins. It builds a project for several Revit versions in one run, copies the output to the Revit add-ins folder and publishes NuGet packages.
 
@@ -176,20 +178,10 @@ steps:
 
 For GitHub Packages the built-in `${{ secrets.GITHUB_TOKEN }}` with `permissions: packages: write` is enough.
 
-## Releasing this package
-
-`BIMPlugins.Nuke` itself is published to nuget.org by the [Publish](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/.github/workflows/publish.yml) workflow using [Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so no API key is stored anywhere.
-
-1. Bump `<Version>` in `source/BIMPlugins.Nuke.csproj` and push.
-2. Push a tag with the same version:
-
-   ```bash
-   git tag v1.1.4
-   git push origin v1.1.4
-   ```
-
-The workflow fails if the tag does not match `<Version>`.
-
 ## License
 
-[MIT](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt)
+This project is [licensed](https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/LICENSE.txt) under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
+
+---
+
+Do you like this project? Please [star this project on GitHub](https://github.com/Samveyil/BIMPlugins.Nuke/stargazers)!
