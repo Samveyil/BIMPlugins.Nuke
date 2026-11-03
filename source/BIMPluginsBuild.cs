@@ -27,13 +27,13 @@ namespace BIMPlugins.Nuke
 
         [Solution] protected abstract Solution Solution { get; }
 
-        [Parameter("Имя проекта для сборки")]
+        [Parameter("Name of the project to build")]
         protected abstract string ProjectName { get; }
    
-        [Parameter("Имя папки для копирования")]
+        [Parameter("Name of the Revit add-in folder to copy into")]
         protected virtual string FolderName { get; set; } = string.Empty;
 
-        [Parameter("Имена конфигураций для сборки (перечислить через запятую)")]
+        [Parameter("Configurations to build (comma-separated)")]
         protected virtual string[] Configurations { get; } = new[] { "R2019", "R2020", "R2021", "R2022", "R2023" };
 
         protected virtual string MSBuildPath { get; } = MSBuildTasks.MSBuildPath;
