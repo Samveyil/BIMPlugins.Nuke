@@ -3,6 +3,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.MSBuild;
 using Serilog;
 using System;
@@ -44,7 +45,7 @@ namespace BIMPlugins.Nuke
         protected virtual string FolderName { get; set; } = string.Empty;
 
         [Parameter("Configurations to build (comma-separated)")]
-        protected virtual string[] Configurations { get; } = new[] { "R2019", "R2020", "R2021", "R2022", "R2023" };
+        protected virtual string[] Configurations { get; } = new[] { "R2019", "R2020", "R2021", "R2022", "R2023", "R2024", "R2025" };
 
         protected virtual string MSBuildPath { get; } = MSBuildTasks.MSBuildPath;
 
@@ -166,6 +167,8 @@ namespace BIMPlugins.Nuke
                     .GetFiles(LibraryProject.Directory, "*.nupkg", SearchOption.AllDirectories)
                     .ToList();
 
+                Assert.True(matchedNupkgs.Count > 0, $"No .nupkg files found in {LibraryProject.Directory}. Run Compile first.");
+
                 foreach (var nupkg in matchedNupkgs)
                 {
                     DotNetNuGetPush(s => s
@@ -191,6 +194,31 @@ namespace BIMPlugins.Nuke
             throw new Exception(
                 "NuGet API key is not set. Pass --nuget-api-key / set NUGET_API_KEY, " +
                 "or use Trusted Publishing in GitHub Actions with --nuget-user / NUGET_USER and 'permissions: id-token: write'.");
+        }
+
+        /// <summary>Creates the tag v{Major}.{Minor}.{Maintenance} and pushes it; the tag starts the Publish workflow.</summary>
+        public Target ReleasePackage => _ => _
+            .Executes(() =>
+            {
+                var tag = $"v{GetReleaseVersion()}";
+
+                // Safety checks before a release
+                Assert.True(GitTasks.GitHasCleanWorkingCopy(), "Commit your changes first");
+                Assert.True(GitTasks.Git($"tag --list {tag}").Count == 0, $"Tag {tag} already exists");
+                Assert.True(GitTasks.Git($"ls-remote --tags origin {tag}").Count == 0, $"Tag {tag} already exists on origin");
+
+                GitTasks.Git("fetch origin");
+                Assert.True(GitTasks.Git("rev-list --count @{u}..HEAD").Single().Text == "0", "Push your commits first");
+
+                GitTasks.Git($"tag {tag}");
+                GitTasks.Git($"push origin {tag}");
+                Log.Information("Pushed {Tag}: GitHub Actions publishes the packages", tag);
+            });
+
+        private string GetReleaseVersion()
+        {
+            var version = $"{MajorVersion}.{MinorVersion}.{MaintenanceVersion}";
+            return string.IsNullOrWhiteSpace(VersionSuffix) ? version : $"{version}-{VersionSuffix}";
         }
     }
 }
