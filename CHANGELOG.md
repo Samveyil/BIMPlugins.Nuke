@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.5-beta.1] - 2026-11-05
+## [1.1.5] - 2026-11-05
 
 ### Added
 - `ReleasePackage` target: creates the tag `v{MajorVersion}.{MinorVersion}.{MaintenanceVersion}` (plus `-{VersionSuffix}`) and pushes it to start the publish workflow. Checks for uncommitted changes, existing tags and unpushed commits first.
@@ -41,6 +41,6 @@ First release on nuget.org.
 
 Published to GitHub Packages only.
 
-[1.1.5-beta.1]: https://github.com/Samveyil/BIMPlugins.Nuke/compare/v1.1.4...v1.1.5-beta.1
+[1.1.5]: https://github.com/Samveyil/BIMPlugins.Nuke/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/Samveyil/BIMPlugins.Nuke/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/Samveyil/BIMPlugins.Nuke/tree/v1.1.3
