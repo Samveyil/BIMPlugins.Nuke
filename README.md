@@ -18,7 +18,7 @@ dotnet add package BIMPlugins.Nuke
 or
 
 ```xml
-<PackageReference Include="BIMPlugins.Nuke" Version="1.1.4" />
+<PackageReference Include="BIMPlugins.Nuke" Version="1.1.5" />
 ```
 
 ## Usage
@@ -56,7 +56,7 @@ class Build : BIMPluginsBuild
 | `ProjectName` | yes | Project to build (the first project whose name contains this string). |
 | `UseRevitVersionAsMajor` | no | Take the major version from the configuration name. Default: `MajorVersion == 0`. |
 | `VersionSuffix` | no | Pre-release suffix (`beta.1` => `1.2.0-beta.1`). Default: none. |
-| `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2023`. |
+| `Configurations` | no | Build configurations, built one after another. Default: `R2019`–`R2025`. |
 | `FolderName` | no | Folder name inside `Addins\<year>\`. Default: `ProjectName`. |
 | `MSBuildPath` | no | Path to MSBuild for .NET Framework projects. Default: auto-detected. |
 | `NugetUser` | no | nuget.org user for Trusted Publishing from GitHub Actions. Default: none. |
@@ -108,7 +108,8 @@ protected override string VersionSuffix => "beta.1";
 | `Clean` | Cleans the project's `bin` and `obj` folders. |
 | `Compile` | Builds every configuration. .NET Framework projects (`net4*`) are built with MSBuild, others with `dotnet build`. |
 | `CopyDllsToRevitFolder` | Builds, then copies the output to `%AppData%\Autodesk\Revit\Addins\<year>\<FolderName>`. The target folder is recreated on each run. |
-| `PushToNugetRepositiry` | Pushes all `*.nupkg` files found in the project folder to `NugetSource`. Duplicates are skipped. |
+| `PushToNugetRepositiry` | Pushes all `*.nupkg` files found in the project folder to `NugetSource`. Duplicates are skipped. Fails if no packages are found, so run `Compile` first. |
+| `ReleasePackage` | Creates the tag `v{MajorVersion}.{MinorVersion}.{MaintenanceVersion}` and pushes it to `origin`, which starts the publish workflow. See *Releasing* below. |
 
 Run a target:
 
@@ -177,6 +178,47 @@ steps:
 ```
 
 For GitHub Packages the built-in `${{ secrets.GITHUB_TOKEN }}` with `permissions: packages: write` is enough.
+
+## Releasing
+
+`ReleasePackage` publishes a release through GitHub Actions:
+
+```bash
+nuke ReleasePackage
+```
+
+It creates the tag `v{MajorVersion}.{MinorVersion}.{MaintenanceVersion}` (plus `-{VersionSuffix}` if set) and pushes it. Before that it checks that:
+
+- the working copy has no uncommitted changes;
+- the tag does not exist locally or on `origin`;
+- all commits are pushed.
+
+With `MajorVersion => 0` the tag is `v0.5.9`, and the packages get the Revit version as major: `2019.5.9` … `2025.5.9`.
+
+The tag starts a workflow in your repository that builds and pushes the packages, for example:
+
+```yaml
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+      - run: dotnet run --project build/_build.csproj -- Compile
+      - run: dotnet run --project build/_build.csproj --no-build -- PushToNugetRepositiry --nuget-user <your nuget.org user>
+```
 
 ## License
 
