@@ -39,6 +39,7 @@
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReleaseNotes>https://github.com/Samveyil/BIMPlugins.Nuke/blob/master/CHANGELOG.md</PackageReleaseNotes>
 		<PackageIcon>icon.png</PackageIcon>
 	</PropertyGroup>
 
